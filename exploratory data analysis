@@ -1,0 +1,66 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+df = pd.read_csv(r"C:\Users\dudekula haneef\OneDrive\Desktop\insurance.csv")
+
+print(df.head())  # View the first few rows
+print(df.info())  # Get information about data types and missing values
+print(df.describe(include='all'))  # Summary statistics for numerical and categorical variables
+df.fillna(df.median(numeric_only=True), inplace=True)
+
+# **Distribution of 'sex' with different colors for male and female**
+sex_counts = df['sex'].value_counts().sort_values(ascending=False)
+colors = ['steelblue', 'darkorange']
+plt.figure(figsize=(8, 6))
+sns.barplot(x=sex_counts.index, y=sex_counts.values, palette=colors)
+plt.title("Distribution of Sex")
+plt.xlabel("Sex")
+plt.ylabel("Count")
+plt.show()
+
+plt.figure(figsize=(8, 6))
+sns.countplot(x='children', hue='sex', data=df)
+plt.title('Distribution of Number of Children by Sex')
+plt.xlabel('Number of Children')
+plt.ylabel('Count')
+plt.show()
+
+# Univariate analysis (distribution of variables)
+for col in df.select_dtypes(include=['int64', 'float64']):
+    plt.figure(figsize=(8, 6))
+    sns.histplot(df[col])
+    plt.title(f"Distribution of {col}")
+    plt.xlabel(col)
+    plt.ylabel(f"{col} count")
+    plt.show()
+
+# Identify outliers (consider using boxplots or IQR-based methods)
+for col in df.select_dtypes(include=['int64', 'float64']):
+    q1 = df[col].quantile(0.25)
+    q3 = df[col].quantile(0.75)
+    iqr = q3 - q1
+    lower_bound = q1 - 1.5 * iqr
+    upper_bound = q3 + 1.5 * iqr
+    outliers = df[(df[col] < lower_bound) | (df[col] > upper_bound)]
+    print(f"Outliers in {col}: {outliers.shape[0]}")
+
+# Bivariate analysis (correlations between variables)
+numerical_df = df.select_dtypes(include=['int64', 'float64'])
+
+# Create a correlation matrix using heatmap
+corr_matrix = numerical_df.corr() # Calculate correlations on numerical data only
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
+plt.title("Correlation Matrix")
+plt.show()
+
+# Explore specific relationships between pairs of variables (consider scatter plots)
+for col1, col2 in zip(numerical_df.columns, numerical_df.columns[1:]):
+    plt.figure(figsize=(8, 6))
+    sns.scatterplot(x=col1, y=col2, data=df)
+    plt.title(f"Relationship between {col1} and {col2}")
+    plt.xlabel(col1)
+    plt.ylabel(col2)
+    plt.show()
